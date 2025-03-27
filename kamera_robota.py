@@ -1,49 +1,29 @@
-import pygame
-import pigpio
+import cv2
 
-pi = pigpio.pi()
-pan_servo = 18   
-tilt_servo = 19 
+cap = cv2.VideoCapture(0)  
 
-pan_angle = 90 
-tilt_angle = 90
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  
 
-def set_servo_angle(pin, angle):
-    pwm = 500 + (angle / 180.0) * 2000
-    pi.set_servo_pulsewidth(pin, pwm)
+while True:
+    ret, frame = cap.read()  
+    if not ret:
+        print("Nie udało się przechwycić obrazu z kamery.")
+        break
+    
+    cv2.imshow('Kamera Pi', frame) 
 
-display_width, display_height = 640, 480
-pygame.init()
-screen = pygame.display.set_mode((display_width, display_height))
-pygame.display.set_caption("Sterowanie kamerą myszką")
-clock = pygame.time.Clock()
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-set_servo_angle(pan_servo, pan_angle)
-set_servo_angle(tilt_servo, tilt_angle)
+cap.release() 
+cv2.destroyAllWindows()
 
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEMOTION:
-            x, y = event.pos
-            pan_angle = int((x / display_width) * 180)
-            tilt_angle = int((y / display_height) * 180)
-            set_servo_angle(pan_servo, pan_angle)
-            set_servo_angle(tilt_servo, tilt_angle)
 
-    screen.fill((0, 0, 0))
-    pygame.display.update()
-    clock.tick(30)
+#raspivid -t 0 -w 640 -h 480 -fps 30
+#sudo apt update
+#sudo apt install python3-opencv
 
-pi.stop()
-pygame.quit()
-
-#sudo apt install pigpio
-#pip install pygame
-#sudo pigpiod
-#python3 camera_mouse_control.py
 
 
 
