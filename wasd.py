@@ -1,8 +1,8 @@
 import pygame
 import time
-from gpiozero import Motor
+# from gpiozero import Motor
+from motor import Motor 
 
-# Ustawienie pinów GPIO dla silników
 motor_left = Motor(forward=17, backward=18)
 motor_right = Motor(forward=22, backward=23)
 
