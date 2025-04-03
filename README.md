@@ -1,1 +1,1 @@
-piotrek debil nie umie github
+Piotrek K nieumie w github
