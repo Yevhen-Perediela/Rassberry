@@ -30,12 +30,16 @@ try:
 
         # --- Sterowanie ruchem ---
         if keys[pygame.K_w]:
+            print('jazda')
             car.set_motor_model(1000, 1000, 1000, 1000)  # Do przodu
         elif keys[pygame.K_s]:
+            print('jazda')
             car.set_motor_model(-1000, -1000, -1000, -1000)  # Do tyłu
         elif keys[pygame.K_a]:
+            print('jazda')
             car.set_motor_model(-1500, -1500, 1500, 1500)  # Skręt w lewo
         elif keys[pygame.K_d]:
+            print('jazda')
             car.set_motor_model(1500, 1500, -1500, -1500)  # Skręt w prawo
         else:
             car.set_motor_model(0, 0, 0, 0)  # Stop
