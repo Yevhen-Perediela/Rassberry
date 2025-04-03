@@ -1,33 +1,32 @@
 import pygame
 import time
-import RPi.GPIO as GPIO
 from motor import Ordinary_Car
 from picamera2 import Picamera2
 import cv2
+from adafruit_pca9685 import PCA9685
+from board import SCL, SDA
+import busio
 
-# --- Inicjalizacja GPIO dla serw ---
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
+# --- Inicjalizacja PCA9685 ---
+i2c = busio.I2C(SCL, SDA)
+pca = PCA9685(i2c)
+pca.frequency = 50  # 50Hz dla serw
 
-PAN_PIN = 12
-TILT_PIN = 13
+# --- Kanały serw ---
+PAN_CHANNEL = 0
+TILT_CHANNEL = 1
 
-GPIO.setup(PAN_PIN, GPIO.OUT)
-GPIO.setup(TILT_PIN, GPIO.OUT)
+# --- Funkcja ustawiająca kąt (0–180) dla PCA9685 ---
+def set_servo_angle(channel, angle):
+    pulse = int((angle / 180.0) * 500 + 100)  # zakres 100–600 to około 0°–180°
+    pulse = max(100, min(600, pulse))         # ograniczenie zakresu
+    pca.channels[channel].duty_cycle = int(pulse / 20000 * 0xFFFF)
 
-pan_pwm = GPIO.PWM(PAN_PIN, 50)  # 50 Hz
-tilt_pwm = GPIO.PWM(TILT_PIN, 50)
-
-pan_pwm.start(7.5)   # środek
-tilt_pwm.start(7.5)
-
-# Funkcja do ustawiania kąta serwa (0–180)
-def set_servo_angle(pwm, angle):
-    duty = 2 + (angle / 18)
-    pwm.ChangeDutyCycle(duty)
-
+# Startowe kąty
 pan_angle = 90
 tilt_angle = 90
+set_servo_angle(PAN_CHANNEL, pan_angle)
+set_servo_angle(TILT_CHANNEL, tilt_angle)
 
 # --- Inicjalizacja kamery ---
 picam2 = Picamera2()
@@ -53,7 +52,7 @@ try:
 
         keys = pygame.key.get_pressed()
 
-        # --- Sterowanie ruchem auta ---
+        # --- Sterowanie autem ---
         if keys[pygame.K_w]:
             print('jazda')
             car.set_motor_model(1000, 1000, 1000, 1000)
@@ -69,25 +68,25 @@ try:
         else:
             car.set_motor_model(0, 0, 0, 0)
 
-        # --- Sterowanie kamerą strzałkami ---
+        # --- Sterowanie kamerą (serwa przez PCA9685) ---
         if keys[pygame.K_LEFT]:
             pan_angle = max(0, pan_angle - 5)
-            set_servo_angle(pan_pwm, pan_angle)
+            set_servo_angle(PAN_CHANNEL, pan_angle)
             print("Pan:", pan_angle)
 
         elif keys[pygame.K_RIGHT]:
             pan_angle = min(180, pan_angle + 5)
-            set_servo_angle(pan_pwm, pan_angle)
+            set_servo_angle(PAN_CHANNEL, pan_angle)
             print("Pan:", pan_angle)
 
         elif keys[pygame.K_UP]:
             tilt_angle = max(0, tilt_angle - 5)
-            set_servo_angle(tilt_pwm, tilt_angle)
+            set_servo_angle(TILT_CHANNEL, tilt_angle)
             print("Tilt:", tilt_angle)
 
         elif keys[pygame.K_DOWN]:
             tilt_angle = min(180, tilt_angle + 5)
-            set_servo_angle(tilt_pwm, tilt_angle)
+            set_servo_angle(TILT_CHANNEL, tilt_angle)
             print("Tilt:", tilt_angle)
 
         # --- Podgląd z kamery ---
@@ -101,8 +100,6 @@ try:
 
 finally:
     car.set_motor_model(0, 0, 0, 0)
-    pan_pwm.stop()
-    tilt_pwm.stop()
-    GPIO.cleanup()
     pygame.quit()
     cv2.destroyAllWindows()
+    pca.deinit()
