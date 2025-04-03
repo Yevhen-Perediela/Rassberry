@@ -1,24 +1,20 @@
 import pygame
 import time
-from motor import Motor
-from picamera2 import Picamera2
 from motor import Ordinary_Car
+from picamera2 import Picamera2
 import cv2
 
-# --- Kamera ---
+# --- Inicjalizacja kamery ---
 picam2 = Picamera2()
 picam2.preview_configuration.main.size = (640, 480)
 picam2.preview_configuration.main.format = "BGR888"
 picam2.configure("preview")
 picam2.start()
 
-PwM = Ordinary_Car()
+# --- Inicjalizacja samochodu ---
+car = Ordinary_Car()
 
-# --- Silniki ---
-motor_left = Motor(forward=17, backward=18)
-motor_right = Motor(forward=22, backward=23)
-
-# --- Pygame do sterowania ---
+# --- Inicjalizacja pygame ---
 pygame.init()
 screen = pygame.display.set_mode((100, 100))
 pygame.display.set_caption("Car + Camera Control")
@@ -32,30 +28,29 @@ try:
 
         keys = pygame.key.get_pressed()
 
-        # Sterowanie silnikami
+        # --- Sterowanie ruchem ---
         if keys[pygame.K_w]:
-            PwM.set_motor_model(-1000, -1000, -1000, -1000)
+            car.set_motor_model(1000, 1000, 1000, 1000)  # Do przodu
         elif keys[pygame.K_s]:
-            PwM.set_motor_model(1000, 1000, 1000, 1000)
+            car.set_motor_model(-1000, -1000, -1000, -1000)  # Do tyłu
         elif keys[pygame.K_a]:
-            PwM.set_motor_model(1000, 1000, -1000, -1000)
+            car.set_motor_model(-1500, -1500, 1500, 1500)  # Skręt w lewo
         elif keys[pygame.K_d]:
-            PwM.set_motor_model(-1000, -1000, 1000, 1000)
+            car.set_motor_model(1500, 1500, -1500, -1500)  # Skręt w prawo
         else:
-            PwM.set_motor_model(0, 0, 0, 0)
+            car.set_motor_model(0, 0, 0, 0)  # Stop
 
-        # Wyświetlanie obrazu z kamery
+        # --- Podgląd z kamery ---
         frame = picam2.capture_array()
         cv2.imshow("Podgląd z kamery Raspberry Pi", frame)
 
-        # Wyjście z programu po wciśnięciu klawisza 'q'
+        # Zamknięcie po naciśnięciu Q
         if cv2.waitKey(1) & 0xFF == ord('q'):
             running = False
 
         time.sleep(0.1)
 
 finally:
-    motor_left.stop()
-    motor_right.stop()
+    car.set_motor_model(0, 0, 0, 0)
     pygame.quit()
     cv2.destroyAllWindows()
