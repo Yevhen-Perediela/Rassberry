@@ -48,11 +48,7 @@ def video_feed():
 
 @app.route('/')
 def home():
-    return """
-    <h1>Samochodzik z API</h1>
-    <p>Użyj POST /move z JSON body: {"direction": "forward"}</p>
-    <p><a href="/video_feed">Podgląd kamery</a></p>
-    """
+    return send_from_directory('static', 'index.html')
 
 
 @app.route('/<path:path>')
