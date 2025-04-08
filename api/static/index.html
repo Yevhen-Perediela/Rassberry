@@ -6,35 +6,58 @@
     <style>
         body {
             font-family: sans-serif;
-            text-align: center;
             background: #111;
             color: white;
+            margin: 0;
+            padding: 0;
         }
-        button {
+        .container {
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: space-evenly;
+        }
+        .controls {
+            text-align: center;
+        }
+        .controls button {
             padding: 15px 25px;
             margin: 5px;
             font-size: 20px;
+        }
+        .video-container {
+            text-align: center;
         }
         video, img {
             border: 2px solid white;
             margin-top: 20px;
             max-width: 90vw;
+            max-height: 80vh;
+        }
+        h1, h2 {
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <h1>🚗 Raspberry Pi Car Control</h1>
 
-    <div>
-        <button onclick="sendCommand('forward')">↑</button><br>
-        <button onclick="sendCommand('left')">←</button>
-        <button onclick="sendCommand('stop')">■</button>
-        <button onclick="sendCommand('right')">→</button><br>
-        <button onclick="sendCommand('backward')">↓</button>
-    </div>
+    <div class="container">
+        <div class="controls">
+            <div>
+                <button onclick="sendCommand('forward')">↑</button><br>
+                <button onclick="sendCommand('left')">←</button>
+                <button onclick="sendCommand('stop')">■</button>
+                <button onclick="sendCommand('right')">→</button><br>
+                <button onclick="sendCommand('backward')">↓</button>
+            </div>
+        </div>
 
-    <h2>🎥 Camera Feed</h2>
-    <img id="video" src="/video_feed" alt="Live camera view"/>
+        <div class="video-container">
+            <h2>🎥 Camera Feed</h2>
+            <img id="video" src="/video_feed" alt="Live camera view"/>
+        </div>
+    </div>
 
     <script>
         async function sendCommand(direction) {
@@ -46,7 +69,7 @@
         }
 
         document.addEventListener('keydown', function(e) {
-            if (e.repeat) return; // Ignoruj przytrzymane
+            if (e.repeat) return;
             switch (e.key.toLowerCase()) {
                 case 'w': sendCommand('forward'); break;
                 case 's': sendCommand('backward'); break;
