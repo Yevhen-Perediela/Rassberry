@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, Response, send_from_directory
-# from motor import Ordinary_Car
+from motor import Ordinary_Car
 from picamera2 import Picamera2
 import cv2
 import os
@@ -14,7 +14,7 @@ picam2.configure("preview")
 picam2.start()
 
 # --- Inicjalizacja samochodu ---
-car = ''
+car = Ordinary_Car()
 
 @app.route('/move', methods=['POST'])
 def move():
