@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Car Control Panel</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background: #111;
+            color: white;
+        }
+        button {
+            padding: 15px 25px;
+            margin: 5px;
+            font-size: 20px;
+        }
+        video, img {
+            border: 2px solid white;
+            margin-top: 20px;
+            max-width: 90vw;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚗 Raspberry Pi Car Control</h1>
+
+    <div>
+        <button onclick="sendCommand('forward')">↑</button><br>
+        <button onclick="sendCommand('left')">←</button>
+        <button onclick="sendCommand('stop')">■</button>
+        <button onclick="sendCommand('right')">→</button><br>
+        <button onclick="sendCommand('backward')">↓</button>
+    </div>
+
+    <h2>🎥 Camera Feed</h2>
+    <img id="video" src="/video_feed" alt="Live camera view"/>
+
+    <script>
+        async function sendCommand(direction) {
+            await fetch('/move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ direction })
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.repeat) return; // Ignoruj przytrzymane
+            switch (e.key.toLowerCase()) {
+                case 'w': sendCommand('forward'); break;
+                case 's': sendCommand('backward'); break;
+                case 'a': sendCommand('left'); break;
+                case 'd': sendCommand('right'); break;
+            }
+        });
+
+        document.addEventListener('keyup', function(e) {
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                case 's':
+                case 'a':
+                case 'd':
+                    sendCommand('stop');
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
